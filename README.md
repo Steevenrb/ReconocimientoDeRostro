@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Face Recognition App
+
+A comprehensive face recognition application built with Next.js and face-api.js that provides multiple facial analysis features.
+
+## Features
+
+- **Face Detection**: Detect and locate faces in images
+- **Facial Landmarks**: Identify 68 facial landmark points
+- **Face Descriptors**: Generate unique face descriptors for recognition
+- **Face Authentication**: Real-time face authentication using webcam
+- **Multiple Input Methods**: Support for both URL and file upload
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Tech Stack
+
+- Next.js 14 (App Router)
+- TypeScript
+- face-api.js
+- Shadcn UI
+- Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/LucaPalminteri/face-api.git
 ```
+2.  Install dependencies:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+.copy-icon { \* { transition: transform 0.35s cubic-bezier(0.35, 0.2, 0.14, 0.95), d 0.35s cubic-bezier(0.35, 0.2, 0.14, 0.95); } } button:has(.copy-icon):hover, button:has(.copy-icon):focus-visible { .left { d: path("M 2.75 0.5 C 1.7835 0.5 1 1.2835 1 2.25 V 9.75 C 1 10.7165 1.7835 11.5 2.75 11.5 H 3.75 H 6.5 V 10 H 3.75 H 2.75 C 2.6119 10 2.5 9.8881 2.5 9.75 V 2.25 C 2.5 2.1119 2.6119 2 2.75 2 H 8.25 C 8.3881 2 8.5 2.1119 8.5 2.25 V 5 H 10 V 2.25 C 10 1.2835 9.2165 0.5 8.25 0.5 H 2.75 Z"); transform: translate(-1px, -1px); } .right { transform: translate(1px, 1px); } }
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`cd face-api npm install`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3.  Run the development server:
 
-## Learn More
+.copy-icon { \* { transition: transform 0.35s cubic-bezier(0.35, 0.2, 0.14, 0.95), d 0.35s cubic-bezier(0.35, 0.2, 0.14, 0.95); } } button:has(.copy-icon):hover, button:has(.copy-icon):focus-visible { .left { d: path("M 2.75 0.5 C 1.7835 0.5 1 1.2835 1 2.25 V 9.75 C 1 10.7165 1.7835 11.5 2.75 11.5 H 3.75 H 6.5 V 10 H 3.75 H 2.75 C 2.6119 10 2.5 9.8881 2.5 9.75 V 2.25 C 2.5 2.1119 2.6119 2 2.75 2 H 8.25 C 8.3881 2 8.5 2.1119 8.5 2.25 V 5 H 10 V 2.25 C 10 1.2835 9.2165 0.5 8.25 0.5 H 2.75 Z"); transform: translate(-1px, -1px); } .right { transform: translate(1px, 1px); } }
 
-To learn more about Next.js, take a look at the following resources:
+`npm run dev`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4.  Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+*   `/app`: Next.js app router pages and layouts
+*   `/components`: React components including face detection features
+*   `/public/models`: face-api.js model files
+*   `/lib`: Utility functions and configurations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Features in Detail
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Face Detection
+
+Upload an image or provide a URL to detect faces. The app will draw rectangles around detected faces and provide a count.
+
+### Facial Landmarks
+
+Detect and display 68 facial landmark points including eyes, nose, mouth, and jawline.
+
+### Face Descriptors
+
+Generate numerical descriptors that can be used for face recognition and comparison.
+
+### Face Authentication
+
+Use your webcam for real-time face detection and authentication.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Author
+
+Luca Palminteri
+
+*   GitHub: [@LucaPalminteri](https://github.com/LucaPalminteri)
+
+## Acknowledgments
+
+*   [face-api.js](https://github.com/justadudewhohacks/face-api.js) for the face recognition functionality
+*   [Shadcn UI](https://ui.shadcn.com/) for the component library
