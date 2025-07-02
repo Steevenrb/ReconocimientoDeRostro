@@ -12,13 +12,14 @@ export default function FaceAuth() {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [recognizedNames, setRecognizedNames] = useState<string[]>([]);
+  const [unrecognizedCount, setUnrecognizedCount] = useState(0);
+  const [labeledDescriptors, setLabeledDescriptors] = useState<faceapi.LabeledFaceDescriptors[]>([]);
 
   useEffect(() => {
     const loadModels = async () => {
       try {
         const MODEL_URL = "/models";
-
         setIsLoading(true);
         setError(null);
 
@@ -28,11 +29,10 @@ export default function FaceAuth() {
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         ]);
 
+        await loadLabeledImages();
         setIsModelLoaded(true);
       } catch (err) {
-        setError(
-          "Error loading face recognition models. Please ensure model files are in the public/models directory.",
-        );
+        setError("Error loading face recognition models. Ensure files are in /public/models.");
         console.error("Error loading models:", err);
       } finally {
         setIsLoading(false);
@@ -49,18 +49,33 @@ export default function FaceAuth() {
     };
   }, []);
 
+  const loadLabeledImages = async () => {
+    const labels = ["steeven", "maria", "richard"]; // Nombres = archivos train/steeven.jpg, etc.
+    const descriptors: faceapi.LabeledFaceDescriptors[] = [];
+
+    for (const label of labels) {
+      const img = await faceapi.fetchImage(`/train/${label}.jpg`);
+      const detection = await faceapi
+        .detectSingleFace(img)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (detection) {
+        descriptors.push(new faceapi.LabeledFaceDescriptors(label, [detection.descriptor]));
+      } else {
+        console.warn(`No se detectó rostro en ${label}`);
+      }
+    }
+
+    setLabeledDescriptors(descriptors);
+  };
+
   const startVideo = async () => {
     try {
-      if (!navigator || !navigator.mediaDevices) {
-        throw new Error("Media devices not supported in this browser");
-      }
-
-      setError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 640 },
+          width: { ideal: 720 },
           height: { ideal: 480 },
-          frameRate: { ideal: 60, max: 120 },
           facingMode: "user",
         },
       });
@@ -69,15 +84,8 @@ export default function FaceAuth() {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unable to access camera";
-
-      setError(`Camera Access Error: ${errorMessage}.
-        Please ensure:
-        - Camera permissions are granted
-        - You are using a secure (HTTPS) connection
-        - Your device supports camera access`);
-
-      console.error("Error accessing camera:", err);
+      setError("Error de cámara. Verifica permisos o conexión segura (HTTPS).");
+      console.error(err);
     }
   };
 
@@ -87,29 +95,44 @@ export default function FaceAuth() {
 
     if (!canvas || !video) return;
 
-    const displaySize = { width: video.width, height: video.height };
+    const displaySize = { width: 720, height: 480 };
     faceapi.matchDimensions(canvas, displaySize);
+
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
 
     const interval = setInterval(async () => {
       try {
         const detections = await faceapi
           .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks();
+          .withFaceLandmarks()
+          .withFaceDescriptors();
 
         const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        const ctx = canvas.getContext("2d");
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
 
-        canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+        const recognized: string[] = [];
+        let unrecognized = 0;
 
-        if (detections.length > 0) {
-          // In a real app, you would compare face descriptors here
-          setIsAuthenticated(true);
-        }
+        resizedDetections.forEach((detection) => {
+          const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+          const label = bestMatch.label !== "unknown" ? bestMatch.label : "Desconocido";
+          const drawBox = new faceapi.draw.DrawBox(detection.detection.box, { label });
+          drawBox.draw(canvas);
+
+          if (bestMatch.label !== "unknown") {
+            recognized.push(bestMatch.label);
+          } else {
+            unrecognized++;
+          }
+        });
+
+        setRecognizedNames(recognized);
+        setUnrecognizedCount(unrecognized);
       } catch (err) {
-        console.error("Error during face detection:", err);
+        console.error("Error durante detección:", err);
       }
-    }, 100);
+    }, 400);
 
     return () => clearInterval(interval);
   };
@@ -123,14 +146,14 @@ export default function FaceAuth() {
         </Alert>
       )}
 
-      <div className="relative aspect-[9/16] bg-muted rounded-lg overflow-hidden h-[50vh] w-full">
+      <div className="relative w-full max-w-[720px] h-[480px] mx-auto bg-muted rounded-lg overflow-hidden">
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
           onPlay={handleVideoOnPlay}
-          width="640"
+          width="720"
           height="480"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -142,7 +165,7 @@ export default function FaceAuth() {
         )}
       </div>
 
-      <div className="flex justify-center gap-4">
+      <div className="flex justify-center">
         <Button
           onClick={startVideo}
           disabled={!isModelLoaded || isLoading}
@@ -151,18 +174,32 @@ export default function FaceAuth() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading...
+              Cargando...
             </>
           ) : (
-            "Start Camera"
+            "Iniciar Cámara"
           )}
         </Button>
       </div>
 
-      {isAuthenticated && (
+      {recognizedNames.length > 0 && (
         <Alert className="bg-green-500/15 text-green-500 border-green-500/50">
           <AlertDescription>
-            Authentication successful! Face detected and verified.
+            ✅ Rostros reconocidos:
+            <ul className="ml-4 list-disc">
+              {recognizedNames.map((name, i) => (
+                <li key={i}>{name}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {unrecognizedCount > 0 && (
+        <Alert className="bg-yellow-200/20 text-yellow-700 border-yellow-400/40">
+          <AlertDescription>
+            ⚠️ No se reconocieron a {unrecognizedCount}{" "}
+            {unrecognizedCount === 1 ? "persona" : "personas"}.
           </AlertDescription>
         </Alert>
       )}

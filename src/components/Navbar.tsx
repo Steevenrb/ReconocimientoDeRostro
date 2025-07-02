@@ -13,22 +13,12 @@ const Navbar = () => {
       {
         href: "/detect-faces",
         icon: Camera,
-        label: "Detect Faces",
-      },
-      {
-        href: "/detect-landmarks",
-        icon: MapPin,
-        label: "Detect Landmarks",
-      },
-      {
-        href: "/compute-descriptors",
-        icon: Fingerprint,
-        label: "Compute Descriptors",
+        label: "Detectar rostros en fotografias",
       },
       {
         href: "/face-auth",
         icon: UserCheck,
-        label: "Face Auth",
+        label: "Autenticar Rostros usando la camara",
       },
     ];
 
@@ -57,7 +47,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="text-xl font-bold">
-            face-api.js
+            App de Deteccion de Rostros
           </Link>
 
           {/* Desktop Navigation */}
